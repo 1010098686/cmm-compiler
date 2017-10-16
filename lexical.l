@@ -1,8 +1,43 @@
 %option yylineno
-digital [0-9]
+decimal_digital [1-9]
+octal_digital [1-7]
+hex_digital [1-9a-fA-F]
 letter [a-zA-Z]
+decimal_int [+-]?(0|({decimal_digital}(0|{decimal_digital})+))
+octal_int 0(0|({octal_digital}(0|{octal_digital})+))
+hex_int (0x|0X)(0|({hex_digital}(0|{hex_digital})+))
+int ({hex_int}|{octal_int}|{decimal_int})
+float_without_exp [+-]?{decimal_digital}+(\.{decimal_digital}+)?
+float_with_exp {float_without_exp}(e|E)[+-]?[0-9]+
+float ({float_with_exp}|{float_without_exp})
+id (_|{letter})(_|{letter}|[0-9])*
 %%
-[+-]?{digital}+ {printf("%s\n",yytext);}
-{letter}(_|{letter})* {printf("%s\n",yytext);}
+{int} {printf("INT");}
+{float} {printf("FLOAT");}
+struct {printf("STRUCT");}
+return {printf("RETURN");}
+if {printf("IF");}
+else {printf("ELSE");}
+while {printf("WHILE");}
+(int|float) {printf("TYPE");}
+{id} {printf("ID");}
+; {printf("SEMI");}
+, {printf("COMMA");}
+= {printf("ASSIGNOP");}
+>|<|>=|<=|==|!= {printf("RELOP");}
+"+" {printf("PLUS");}
+- {printf("MINUS");}
+"*" {printf("STAR");}
+"/" {printf("DIV");}
+&& {printf("AND");}
+"||" {printf("OR");}
+"." {printf("DOT");}
+! {printf("NOT");}
+"(" {printf("LP");}
+")" {printf("RP");}
+"[" {printf("LB");}
+"]" {printf("RB");}
+"{" {printf("LC");}
+"}" {printf("RC");}
 . {printf("error type at line %d with text: %s\n",yylineno,yytext);}
 %%
