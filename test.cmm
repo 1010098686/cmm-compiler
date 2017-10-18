@@ -1,6 +1,11 @@
-1
-2
-0x01
-12.3
-01.0803
-02.0908e003
+int main(){
+	int a;
+	float b;
+	while(a<=b){
+		do(a,b);
+		return c;
+	}
+	return 0;
+	int a[3][4];
+	a[3,4]=5;
+}

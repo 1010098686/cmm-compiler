@@ -1,9 +1,12 @@
 CC=gcc
-FLAGS=-lfl
+LEX=flex
+BISON=bison
+FLAGS=-lfl -ly
 
-scanner:main.c lex.yy.c
-	$(CC) main.c lex.yy.c $(FLAGS) -o scanner
-lex.yy.c:lexical.l
-	flex lexical.l
+scanner:main.c syntax.tab.c
+	$(CC) main.c syntax.tab.c $(FLAGS) -o scanner
+syntax.tab.c:syntax.y lexical.l
+	$(BISON) -d syntax.y
+	$(LEX) lexical.l
 clean:
-	rm lex.yy.c scanner
+	rm -f lex.yy.c syntax.tab.c syntax.tab.h scanner
