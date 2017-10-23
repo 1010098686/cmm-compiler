@@ -1,12 +1,12 @@
 %{
-#define YYDEBUG 0
+#define YYDEBUG 1
 #include"lex.yy.c"
 #include "tree.h"
 extern void yyerror(char* msg);
 %}
 %locations
 %union {
-    struct TREE_NODE *type_node;
+    struct tree_node *type_node;
 }
 %token <type_node> INT FLOAT ID
 %token <type_node> SEMI COMMA
@@ -41,7 +41,7 @@ extern void yyerror(char* msg);
 %type <type_node> Exp Args
 
 %%
-Program : ExtDefList {$$ = new_tree_node(PROGRAM_T, @$.first_line, NULL);root = $$;};
+Program : ExtDefList {$$ = new_tree_node(PROGRAM_T, @$.first_line, NULL);root = $$;add_children($$, 1, $1);};
 ExtDefList : ExtDef ExtDefList {$$ = new_tree_node(EXTDEFLIST_T, @$.first_line, NULL);add_children($$, 2, $1, $2);}
  | {$$ = NULL;}
  ;
@@ -71,8 +71,8 @@ FunDec : ID LP VarList RP {$$ = new_tree_node(FUNDEC_T, @$.first_line, NULL);add
 VarList : ParamDec COMMA VarList {$$ = new_tree_node(VARLIST_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
  | ParamDec {$$ = new_tree_node(VARLIST_T, @$.first_line, NULL);add_children($$, 1, $1);}
  ;
-ParamDec : Specifier VarDec {$$ = new_tree_node(PARAMDEC_T, @$.first_line, NULL);add_children($$, 2, $1, $2)};
-CompSt : LC DefList StmtList RC {$$ = new_tree_node(COMPST_T, @$.first_line, NULL);add_children($$, 4, $1, $2, $3, $4)};
+ParamDec : Specifier VarDec {$$ = new_tree_node(PARAMDEC_T, @$.first_line, NULL);add_children($$, 2, $1, $2);};
+CompSt : LC DefList StmtList RC {$$ = new_tree_node(COMPST_T, @$.first_line, NULL);add_children($$, 4, $1, $2, $3, $4);};
 StmtList : Stmt StmtList {$$ = new_tree_node(STMTLIST_T, @$.first_line, NULL);add_children($$, 2, $1, $2);}
  | {$$ = NULL;}
  ;
@@ -96,7 +96,7 @@ Dec : VarDec {$$ = new_tree_node(DEC_T, @$.first_line, NULL);add_children($$, 1,
 Exp : Exp ASSIGNOP Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
  | Exp AND Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
  | Exp OR Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
- | Exp RELOP Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, $1, $2, $3);}
+ | Exp RELOP Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
  | Exp PLUS Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
  | Exp MINUS Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
  | Exp STAR Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
@@ -117,5 +117,6 @@ Args : Exp COMMA Args {$$ = new_tree_node(ARGS_T, @$.first_line, NULL);add_child
  ;
 %%
 void yyerror(char* msg){
-	fprintf(stderr,"error: %s\n",msg);
+	fprintf(stderr,"Error type B at Line %d: %s\n", yylineno, msg);
+    error = 1;
 }

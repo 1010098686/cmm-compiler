@@ -34,7 +34,7 @@ enum node_type {
 typedef enum node_type NODE_TYPE;
 
 struct tree_node {
-    int node_type;
+    NODE_TYPE node_type;
     int lineno;
     union {
         char *s_value;
@@ -53,13 +53,15 @@ extern TREE_NODE *root;
 
 extern char *name[];
 
+extern int error;
+
 #define node_name(type) name[type]
 
 void add_child(TREE_NODE *parent, TREE_NODE *child);
 
 void add_children(TREE_NODE *parent, int n, ...);
 
-TREE_NODE* new_TREE_NODE(int node_type, int lineno, char *value);
+TREE_NODE* new_tree_node(NODE_TYPE node_type, int lineno, char *value);
 
 void print_node(TREE_NODE *node);
 

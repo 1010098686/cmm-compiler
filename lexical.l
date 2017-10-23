@@ -1,8 +1,12 @@
 %{
+#include<stdio.h>
 #include"syntax.tab.h"
 #include "tree.h"
 
 int yycolumn=1;
+
+extern YYSTYPE yylval;
+
 #define YY_USER_ACTION \
 	yylloc.first_line = yylloc.last_line = yylineno; \
 	yylloc.first_column = yycolumn; \
@@ -52,5 +56,5 @@ while {yylval.type_node = new_tree_node(WHILE_T, yylineno, NULL);return WHILE;}
 "{" {yylval.type_node = new_tree_node(LC_T, yylineno, NULL);return LC;}
 "}" {yylval.type_node = new_tree_node(RC_T, yylineno, NULL);return RC;}
 \n {yycolumn = 1;}
-. {printf("error type at line %d with text: %s\n",yylineno,yytext);}
+. {printf("Error type A at Line %d: %s\n",yylineno,yytext);error = 1;}
 %%

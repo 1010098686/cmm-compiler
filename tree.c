@@ -31,14 +31,18 @@ char *name[] = {
     "DefList", "Def", "DecList", "Dec",
     "Exp", "Args"
 };
+int error = 0;
+
 void add_child(TREE_NODE *parent, TREE_NODE *child) {
-    if(parent->first_child == NULL) {
-        parent->first_child = child;
-        parent->last_child = child;
-    }
-    else {
-        parent->last_child->brother = child;
-        parent->last_child = child;
+    if(child != NULL) {
+        if(parent->first_child == NULL) {
+            parent->first_child = child;
+            parent->last_child = child;
+        }
+        else {
+            parent->last_child->brother = child;
+            parent->last_child = child;
+        }
     }
 }
 
@@ -46,13 +50,13 @@ void add_children(TREE_NODE *parent, int n, ...) {
     va_list childs;
     va_start(childs, n);
     for(int i = 0;i < n;i++) {
-        TREE_NODE * child = va_arg(childs, TREE_NODE*);
+        TREE_NODE *child = va_arg(childs, TREE_NODE*);
         add_child(parent, child);
     }
     va_end(childs);
 }
 
-TREE_NODE* new_tree_node(int node_type, int lineno, char *value) {
+TREE_NODE* new_tree_node(NODE_TYPE node_type, int lineno, char *value) {
     TREE_NODE *ret = (TREE_NODE*)malloc(sizeof(TREE_NODE));
     ret->s_value = NULL;
     ret->first_child = NULL;
@@ -73,7 +77,7 @@ TREE_NODE* new_tree_node(int node_type, int lineno, char *value) {
 
         case ID_T:
         case TYPE_T:
-        ret->s_value = (char*)malloc(sizeof(value));
+        ret->s_value = (char*)malloc(sizeof(char*)*strlen(value));
         strcpy(ret->s_value, value);
         break;
 
