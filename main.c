@@ -1,13 +1,9 @@
+#include "tree.h"
 #include <stdio.h>
-
 extern FILE* yyin;
 extern int yylex(void);
 extern int yyparse(void);
 extern void yyrestart(FILE* f);
-
-yyerror(char* msg){
-	fprintf(stderr,"error: %s\n",msg);
-}
 
 int main(int argc, char** argv){
     if(argc<=1) return 1;

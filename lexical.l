@@ -1,5 +1,6 @@
 %{
 #include"syntax.tab.h"
+#include "tree.h"
 
 int yycolumn=1;
 #define YY_USER_ACTION \
@@ -23,33 +24,33 @@ float ({float_with_exp}|{float_without_exp})
 id (_|{letter})(_|{letter}|[0-9])*
 %%
 (\t|" ") {}
-{int} {yylval = atoi(yytext);return INT;}
-{float} {yylval = atof(yytext);return FLOAT;}
-struct {return STRUCT;}
-return {return RETURN;}
-if {return IF;}
-else {return ELSE;}
-while {return WHILE;}
-(int|float) {return TYPE;}
-{id} {return ID;}
-; {return SEMI;}
-, {return COMMA;}
-= {return ASSIGNOP;}
->|<|>=|<=|==|!= {return RELOP;}
-"+" {return PLUS;}
-- {return MINUS;}
-"*" {return STAR;}
-"/" {return DIV;}
-&& {return AND;}
-"||" {return OR;}
-"." {return DOT;}
-! {return NOT;}
-"(" {return LP;}
-")" {return RP;}
-"[" {return LB;}
-"]" {return RB;}
-"{" {return LC;}
-"}" {return RC;}
+{int} {yylval.type_node = new_tree_node(INT_T, yylineno, yytext);return INT;}
+{float} {yylval.type_node = new_tree_node(FLOAT_T, yylineno, yytext);return FLOAT;}
+struct {yylval.type_node = new_tree_node(STRUCT_T, yylineno, NULL);return STRUCT;}
+return {yylval.type_node = new_tree_node(RETURN_T, yylineno, NULL);return RETURN;}
+if {yylval.type_node = new_tree_node(IF_T, yylineno, NULL);return IF;}
+else {yylval.type_node = new_tree_node(ELSE_T, yylineno, NULL);return ELSE;}
+while {yylval.type_node = new_tree_node(WHILE_T, yylineno, NULL);return WHILE;}
+(int|float) {yylval.type_node = new_tree_node(TYPE_T, yylineno, yytext);return TYPE;}
+{id} {yylval.type_node = new_tree_node(ID_T, yylineno, yytext);return ID;}
+; {yylval.type_node = new_tree_node(SEMI_T, yylineno, NULL);return SEMI;}
+, {yylval.type_node = new_tree_node(COMMA_T, yylineno, NULL);return COMMA;}
+= {yylval.type_node = new_tree_node(ASSIGNOP_T, yylineno, NULL);return ASSIGNOP;}
+>|<|(>=)|(<=)|(==)|(!=) {yylval.type_node = new_tree_node(RELOP_T, yylineno, NULL);return RELOP;}
+"+" {yylval.type_node = new_tree_node(PLUS_T, yylineno, NULL);return PLUS;}
+- {yylval.type_node = new_tree_node(MINUS_T, yylineno, NULL);return MINUS;}
+"*" {yylval.type_node = new_tree_node(STAR_T, yylineno, NULL);return STAR;}
+"/" {yylval.type_node = new_tree_node(DIV_T, yylineno, NULL);return DIV;}
+&& {yylval.type_node = new_tree_node(AND_T, yylineno, NULL);return AND;}
+"||" {yylval.type_node = new_tree_node(OR_T, yylineno, NULL);return OR;}
+"." {yylval.type_node = new_tree_node(DOT_T, yylineno, NULL);return DOT;}
+! {yylval.type_node = new_tree_node(NOT_T, yylineno, NULL);return NOT;}
+"(" {yylval.type_node = new_tree_node(LP_T, yylineno, NULL);return LP;}
+")" {yylval.type_node = new_tree_node(RP_T, yylineno, NULL);return RP;}
+"[" {yylval.type_node = new_tree_node(LB_T, yylineno, NULL);return LB;}
+"]" {yylval.type_node = new_tree_node(RB_T, yylineno, NULL);return RB;}
+"{" {yylval.type_node = new_tree_node(LC_T, yylineno, NULL);return LC;}
+"}" {yylval.type_node = new_tree_node(RC_T, yylineno, NULL);return RC;}
 \n {yycolumn = 1;}
 . {printf("error type at line %d with text: %s\n",yylineno,yytext);}
 %%

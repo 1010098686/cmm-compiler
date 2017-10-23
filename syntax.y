@@ -1,22 +1,26 @@
 %{
 #define YYDEBUG 0
 #include"lex.yy.c"
+#include "tree.h"
+extern void yyerror(char* msg);
 %}
 %locations
-
-%token INT FLOAT ID
-%token SEMI COMMA
-%token TYPE
-%token LC RC LP RP LB RB
-%token STRUCT
-%token RETURN
-%token IF ELSE
-%token WHILE
-%token DOT
-%token ASSIGNOP
-%token AND OR NOT
-%token PLUS MINUS STAR DIV
-%token RELOP
+%union {
+    struct TREE_NODE *type_node;
+}
+%token <type_node> INT FLOAT ID
+%token <type_node> SEMI COMMA
+%token <type_node> TYPE
+%token <type_node> LC RC LP RP LB RB
+%token <type_node> STRUCT
+%token <type_node> RETURN
+%token <type_node> IF ELSE
+%token <type_node> WHILE
+%token <type_node> DOT
+%token <type_node> ASSIGNOP
+%token <type_node> AND OR NOT
+%token <type_node> PLUS MINUS STAR DIV
+%token <type_node> RELOP
 
 %right ASSIGNOP
 %left OR
@@ -28,80 +32,90 @@
 %left DOT LP RP LB RB
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
+
+%type <type_node> Program ExtDefList ExtDef ExtDecList
+%type <type_node> Specifier StructSpecifier OptTag Tag
+%type <type_node> VarDec FunDec VarList ParamDec
+%type <type_node> CompSt StmtList Stmt
+%type <type_node> DefList Def DecList Dec
+%type <type_node> Exp Args
+
 %%
-Program : ExtDefList
+Program : ExtDefList {$$ = new_tree_node(PROGRAM_T, @$.first_line, NULL);root = $$;};
+ExtDefList : ExtDef ExtDefList {$$ = new_tree_node(EXTDEFLIST_T, @$.first_line, NULL);add_children($$, 2, $1, $2);}
+ | {$$ = NULL;}
  ;
-ExtDefList : ExtDef ExtDefList
- |
+ExtDef : Specifier ExtDecList SEMI {$$ = new_tree_node(EXTDEF_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | Specifier SEMI {$$ = new_tree_node(EXTDEF_T, @$.first_line, NULL);add_children($$, 2, $1, $2);}
+ | Specifier FunDec CompSt {$$ = new_tree_node(EXTDEF_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
  ;
-ExtDef : Specifier ExtDecList SEMI
- | Specifier SEMI
- | Specifier FunDec CompSt
+ExtDecList : VarDec {$$ = new_tree_node(EXTDECLIST_T, @$.first_line, NULL);add_children($$, 1, $1);}
+ | VarDec COMMA ExtDecList {$$ = new_tree_node(EXTDECLIST_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
  ;
-ExtDecList : VarDec
- | VarDec COMMA ExtDecList
+Specifier : TYPE {$$ = new_tree_node(SPECIFIER_T, @$.first_line, NULL);add_children($$, 1, $1);}
+ | StructSpecifier {$$ = new_tree_node(SPECIFIER_T, @$.first_line, NULL);add_children($$, 1, $1);}
  ;
-Specifier : TYPE
- | StructSpecifier
+StructSpecifier : STRUCT OptTag LC DefList RC {$$ = new_tree_node(STRUCTSPECIFIER_T, @$.first_line, NULL);add_children($$, 5, $1, $2, $3, $4, $5);}
+ | STRUCT Tag {$$ = new_tree_node(STRUCTSPECIFIER_T, @$.first_line, NULL);add_children($$, 2, $1, $2);}
  ;
-StructSpecifier : STRUCT OptTag LC DefList RC
- | STRUCT TAG
+OptTag : ID {$$ = new_tree_node(OPTTAG_T, @$.first_line, NULL);add_children($$, 1, $1);}
+ | {$$ = NULL;}
  ;
-OptTag : ID
- |
+Tag : ID {$$ = new_tree_node(TAG_T, @$.first_line, NULL);add_children($$, 1, $1);};
+VarDec : ID {$$ = new_tree_node(VARDEC_T, @$.first_line, NULL);add_children($$, 1, $1);}
+ | VarDec LB INT RB {$$ = new_tree_node(VARDEC_T, @$.first_line, NULL);add_children($$, 4, $1, $2, $3, $4);}
  ;
-TAG : ID;
-VarDec : ID
- | VarDec LB INT RB
+FunDec : ID LP VarList RP {$$ = new_tree_node(FUNDEC_T, @$.first_line, NULL);add_children($$, 4, $1, $2, $3, $4);}
+ | ID LP RP {$$ = new_tree_node(FUNDEC_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
  ;
-FunDec : ID LP VarList RP
- | ID LP RP
+VarList : ParamDec COMMA VarList {$$ = new_tree_node(VARLIST_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | ParamDec {$$ = new_tree_node(VARLIST_T, @$.first_line, NULL);add_children($$, 1, $1);}
  ;
-VarList : ParamDec COMMA VarList
- | ParamDec
+ParamDec : Specifier VarDec {$$ = new_tree_node(PARAMDEC_T, @$.first_line, NULL);add_children($$, 2, $1, $2)};
+CompSt : LC DefList StmtList RC {$$ = new_tree_node(COMPST_T, @$.first_line, NULL);add_children($$, 4, $1, $2, $3, $4)};
+StmtList : Stmt StmtList {$$ = new_tree_node(STMTLIST_T, @$.first_line, NULL);add_children($$, 2, $1, $2);}
+ | {$$ = NULL;}
  ;
-ParamDec : Specifier VarDec;
-CompSt : LC DefList StmtList RC;
-StmtList : Stmt StmtList
- |
+Stmt : Exp SEMI {$$ = new_tree_node(STMT_T, @$.first_line, NULL);add_children($$, 2, $1, $2);}
+ | CompSt {$$ = new_tree_node(STMT_T, @$.first_line, NULL);add_children($$, 1, $1);}
+ | RETURN Exp SEMI {$$ = new_tree_node(STMT_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE {$$ = new_tree_node(STMT_T, @$.first_line, NULL);add_children($$, 5, $1, $2, $3, $4, $5);}
+ | IF LP Exp RP Stmt ELSE Stmt {$$ = new_tree_node(STMT_T, @$.first_line, NULL);add_children($$, 7, $1, $2, $3, $4, $5, $6, $7);}
+ | WHILE LP Exp RP Stmt {$$ = new_tree_node(STMT_T, @$.first_line, NULL);add_children($$, 5, $1, $2, $3, $4, $5);}
  ;
-Stmt : Exp SEMI
- | CompSt
- | RETURN Exp SEMI
- | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE
- | IF LP Exp RP Stmt ELSE Stmt
- | WHILE LP Exp RP Stmt
+DefList : Def DefList {$$ = new_tree_node(DEFLIST_T, @$.first_line, NULL);add_children($$, 2, $1, $2);}
+ | {$$ = NULL;}
  ;
-DefList : Def DefList
- |
+Def : Specifier DecList SEMI {$$ = new_tree_node(DEF_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);};
+DecList : Dec {$$ = new_tree_node(DECLIST_T, @$.first_line, NULL);add_children($$, 1, $1);}
+ | Dec COMMA DecList {$$ = new_tree_node(DECLIST_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
  ;
-Def : Specifier DecList SEMI;
-DecList : Dec
- | Dec COMMA DecList
+Dec : VarDec {$$ = new_tree_node(DEC_T, @$.first_line, NULL);add_children($$, 1, $1);}
+ | VarDec ASSIGNOP Exp {$$ = new_tree_node(DEC_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
  ;
-Dec : VarDec
- | VarDec ASSIGNOP Exp
+Exp : Exp ASSIGNOP Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | Exp AND Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | Exp OR Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | Exp RELOP Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, $1, $2, $3);}
+ | Exp PLUS Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | Exp MINUS Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | Exp STAR Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | Exp DIV Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | LP Exp RP {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | MINUS Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 2, $1, $2);}
+ | NOT Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 2, $1, $2);}
+ | ID LP Args RP {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 4, $1, $2, $3, $4);}
+ | ID LP RP {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | Exp LB Exp RB {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 4, $1, $2, $3, $4);}
+ | Exp DOT ID {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | ID {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 1, $1);}
+ | INT {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 1, $1);}
+ | FLOAT {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 1, $1);}
  ;
-Exp : Exp ASSIGNOP Exp
- | Exp AND Exp
- | Exp OR Exp
- | Exp RELOP Exp
- | Exp PLUS Exp
- | Exp MINUS Exp
- | Exp STAR Exp
- | Exp DIV Exp
- | LP Exp RP
- | MINUS Exp
- | NOT Exp
- | ID LP Args RP
- | ID LP RP
- | Exp LB Exp RB
- | Exp DOT ID
- | ID
- | INT
- | FLOAT
- ;
-Args : Exp COMMA Args
- | Exp
+Args : Exp COMMA Args {$$ = new_tree_node(ARGS_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | Exp {$$ = new_tree_node(ARGS_T, @$.first_line, NULL);add_children($$, 1, $1);}
  ;
 %%
+void yyerror(char* msg){
+	fprintf(stderr,"error: %s\n",msg);
+}
