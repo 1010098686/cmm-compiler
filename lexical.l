@@ -1,7 +1,7 @@
 %{
 #include<stdio.h>
 #include"syntax.tab.h"
-#include "tree.h"
+#include "head/tree.h"
 
 int yycolumn=1;
 

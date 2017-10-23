@@ -7,10 +7,24 @@ else ifeq ($(shell uname), Darwin)
 	FLAGS := -ll -ly
 endif
 
-parser:tree.c syntax.tab.c main.c
-	$(CC) tree.c syntax.tab.c main.c $(FLAGS) -o parser
+SRC_FILES := $(shell ls src)
+SRC := $(foreach name, $(SRC_FILES), src/$(name))
+OBJS := $(SRC_FILES:%.c=%.o)
+
+TEST_FILES := $(shell find test -name "*.cmm")
+TEST_RESULT := $(shell find test -name "*.out")
+
+TARGET := parser
+
+$(TARGET):$(SRC) syntax.tab.c
+	$(CC) $(SRC) syntax.tab.c $(FLAGS) -o parser
 syntax.tab.c:syntax.y lexical.l
 	$(BISON) -d syntax.y
 	$(LEX) lexical.l
+	
+test:
+	bash test.sh $(TEST_FILES)
+		
 clean:
-	rm -f lex.yy.c syntax.tab.c syntax.tab.h parser
+	rm -f syntax.tab.h syntax.tab.c lex.yy.c $(TARGET) $(TEST_RESULT)
+.PHONY:test

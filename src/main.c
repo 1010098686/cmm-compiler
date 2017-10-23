@@ -1,4 +1,4 @@
-#include "tree.h"
+#include "../head/tree.h"
 #include <stdio.h>
 extern FILE* yyin;
 extern int yydebug;

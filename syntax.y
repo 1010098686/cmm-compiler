@@ -1,7 +1,7 @@
 %{
 #define YYDEBUG 0
 #include"lex.yy.c"
-#include "tree.h"
+#include "head/tree.h"
 extern void yyerror(char* msg);
 %}
 %locations
