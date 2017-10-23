@@ -68,7 +68,7 @@ TREE_NODE* new_tree_node(NODE_TYPE node_type, int lineno, char *value) {
 
     switch(ret->node_type) {
         case INT_T:
-        ret->i_value = atoi(value);
+        ret->i_value = strtol(value,NULL,0);
         break;
 
         case FLOAT_T:
@@ -77,7 +77,7 @@ TREE_NODE* new_tree_node(NODE_TYPE node_type, int lineno, char *value) {
 
         case ID_T:
         case TYPE_T:
-        ret->s_value = (char*)malloc(sizeof(char*)*strlen(value));
+        ret->s_value = (char*)malloc(sizeof(char)*(strlen(value)+1));
         strcpy(ret->s_value, value);
         break;
 

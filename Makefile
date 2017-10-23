@@ -1,7 +1,11 @@
 CC=gcc
 LEX=flex
 BISON=bison
-FLAGS=-ll -ly
+ifeq ($(shell uname), Linux)
+	FLAGS := -lfl -ly
+else ifeq ($(shell uname), Darwin)
+	FLAGS := -ll -ly
+endif
 
 parser:tree.c syntax.tab.c main.c
 	$(CC) tree.c syntax.tab.c main.c $(FLAGS) -o parser

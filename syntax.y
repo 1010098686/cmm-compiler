@@ -1,5 +1,5 @@
 %{
-#define YYDEBUG 1
+#define YYDEBUG 0
 #include"lex.yy.c"
 #include "tree.h"
 extern void yyerror(char* msg);
