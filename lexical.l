@@ -22,7 +22,7 @@ decimal_int (0|({decimal_digital}(0|{decimal_digital})*))
 octal_int 0(0|{octal_digital})+
 hex_int (0x|0X)(0|{hex_digital})+
 int ({hex_int}|{octal_int}|{decimal_int})
-float_without_exp (0|{decimal_digital})+(\.(0|{decimal_digital})+)?
+float_without_exp (0|({decimal_digital}(0|{decimal_digital})*))(\.(0|{decimal_digital})+)?
 float_with_exp {float_without_exp}(e|E)[\+-]?[0-9]+
 float ({float_with_exp}|{float_without_exp})
 id (_|{letter})(_|{letter}|[0-9])*

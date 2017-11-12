@@ -48,6 +48,7 @@ ExtDefList : ExtDef ExtDefList {$$ = new_tree_node(EXTDEFLIST_T, @$.first_line, 
 ExtDef : Specifier ExtDecList SEMI {$$ = new_tree_node(EXTDEF_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
  | Specifier SEMI {$$ = new_tree_node(EXTDEF_T, @$.first_line, NULL);add_children($$, 2, $1, $2);}
  | Specifier FunDec CompSt {$$ = new_tree_node(EXTDEF_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | SEMI {error = 1;}
  ;
 ExtDecList : VarDec {$$ = new_tree_node(EXTDECLIST_T, @$.first_line, NULL);add_children($$, 1, $1);}
  | VarDec COMMA ExtDecList {$$ = new_tree_node(EXTDECLIST_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
@@ -67,12 +68,14 @@ VarDec : ID {$$ = new_tree_node(VARDEC_T, @$.first_line, NULL);add_children($$, 
  ;
 FunDec : ID LP VarList RP {$$ = new_tree_node(FUNDEC_T, @$.first_line, NULL);add_children($$, 4, $1, $2, $3, $4);}
  | ID LP RP {$$ = new_tree_node(FUNDEC_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
+ | error RP {error = 1;}
  ;
 VarList : ParamDec COMMA VarList {$$ = new_tree_node(VARLIST_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
  | ParamDec {$$ = new_tree_node(VARLIST_T, @$.first_line, NULL);add_children($$, 1, $1);}
  ;
 ParamDec : Specifier VarDec {$$ = new_tree_node(PARAMDEC_T, @$.first_line, NULL);add_children($$, 2, $1, $2);};
 CompSt : LC DefList StmtList RC {$$ = new_tree_node(COMPST_T, @$.first_line, NULL);add_children($$, 4, $1, $2, $3, $4);};
+ | error RC {error = 1;}
 StmtList : Stmt StmtList {$$ = new_tree_node(STMTLIST_T, @$.first_line, NULL);add_children($$, 2, $1, $2);}
  | {$$ = NULL;}
  ;
@@ -82,11 +85,13 @@ Stmt : Exp SEMI {$$ = new_tree_node(STMT_T, @$.first_line, NULL);add_children($$
  | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE {$$ = new_tree_node(STMT_T, @$.first_line, NULL);add_children($$, 5, $1, $2, $3, $4, $5);}
  | IF LP Exp RP Stmt ELSE Stmt {$$ = new_tree_node(STMT_T, @$.first_line, NULL);add_children($$, 7, $1, $2, $3, $4, $5, $6, $7);}
  | WHILE LP Exp RP Stmt {$$ = new_tree_node(STMT_T, @$.first_line, NULL);add_children($$, 5, $1, $2, $3, $4, $5);}
+ | error SEMI {error = 1;}
  ;
 DefList : Def DefList {$$ = new_tree_node(DEFLIST_T, @$.first_line, NULL);add_children($$, 2, $1, $2);}
  | {$$ = NULL;}
  ;
 Def : Specifier DecList SEMI {$$ = new_tree_node(DEF_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);};
+ | Specifier error SEMI {error = 1;}
 DecList : Dec {$$ = new_tree_node(DECLIST_T, @$.first_line, NULL);add_children($$, 1, $1);}
  | Dec COMMA DecList {$$ = new_tree_node(DECLIST_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
  ;
@@ -111,12 +116,13 @@ Exp : Exp ASSIGNOP Exp {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_child
  | ID {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 1, $1);}
  | INT {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 1, $1);}
  | FLOAT {$$ = new_tree_node(EXP_T, @$.first_line, NULL);add_children($$, 1, $1);}
+ | LP error RP {error = 1;}
+ | Exp LB error RB {error = 1;}
  ;
 Args : Exp COMMA Args {$$ = new_tree_node(ARGS_T, @$.first_line, NULL);add_children($$, 3, $1, $2, $3);}
  | Exp {$$ = new_tree_node(ARGS_T, @$.first_line, NULL);add_children($$, 1, $1);}
  ;
 %%
 void yyerror(char* msg){
-	fprintf(stderr,"Error type B at Line %d: %s\n", yylineno, msg);
-    error = 1;
+	printf("Error type B at Line %d: %s\n", yylineno, msg);
 }
