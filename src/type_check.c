@@ -187,7 +187,7 @@ void process_tag(TREE_NODE* node,Type* type){
 }
 void process_vardec(TREE_NODE* node,Type* type){
     TREE_NODE* head = node->first_child;
-    node->type = (Type*)malloc(sizeof(Type));
+    //node->type = (Type*)malloc(sizeof(Type));
     if(head->node_type == ID_T){
         copyString(&node->s_value,head->s_value);
         node->type = copyType(type);
@@ -196,9 +196,24 @@ void process_vardec(TREE_NODE* node,Type* type){
         process_vardec(head,type);
         int size = int_value->i_value;
         copyString(&node->s_value,head->s_value);
-        node->type->kind = ARRAY;
-        node->type->array.size = size;
-        node->type->array.elem = copyType(head->type);
+        // node->type->kind = ARRAY;
+        // node->type->array.size = size;
+        // node->type->array.elem = copyType(head->type);
+        node->type = copyType(head->type);
+        Type* temp = node->type;
+        if(temp->kind != ARRAY){
+            node->type->kind = ARRAY;
+            node->type->array.size = size;
+            node->type->array.elem = copyType(head->type);
+        }else{
+            while(temp->kind == ARRAY && temp->array.elem->kind == ARRAY){
+                temp = temp->array.elem;
+            }
+            Type* t = copyType(temp->array.elem);
+            temp->array.elem->kind = ARRAY;
+            temp->array.elem->array.size = size;
+            temp->array.elem->array.elem = copyType(t);
+        }
     }
     if(node->brother == NULL || node->brother->node_type != LB_T){
         Type* temp = find(node->s_value);

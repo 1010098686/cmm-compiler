@@ -1,7 +1,6 @@
-int main() {
-    int a, b;
-    float c, d;
-    while(c = d) {
-
-    }
-}
+struct A
+{
+    int a;
+    float b;
+};
+struct A c[2][3][4];
