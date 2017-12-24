@@ -12,7 +12,7 @@ SRC := $(foreach name, $(SRC_FILES), src/$(name))
 OBJS := $(SRC_FILES:%.c=%.o)
 
 TEST_FILES := $(shell find test -name "*.cmm")
-TEST_RESULT := $(shell find test -name "*.out")
+TEST_RESULT := $(shell find test -name "*.ir")
 
 TARGET := parser
 
