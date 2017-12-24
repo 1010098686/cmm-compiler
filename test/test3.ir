@@ -1,0 +1,147 @@
+FUNCTION mod :
+PARAM number2
+PARAM m2
+t6 := number2 / m2
+t5 := t6 * m2
+t3 := number2 - t5
+result := t3
+result2 := result
+RETURN result
+FUNCTION power :
+PARAM base1
+PARAM p1
+t19 := #1
+t17 := t19 + p1
+t16 := t17 - p1
+ret1 := t16
+LABEL label1 :
+t29 := ret1 - ret1
+t30 := #90
+t27 := t29 + t30
+t28 := #89
+t25 := t27 - t28
+t26 := #1
+t23 := t25 + t26
+t24 := #2
+t22 := t23 - t24
+IF p1 > t22 GOTO label2
+GOTO label3
+LABEL label2 :
+t34 := ret1 * base1
+ret1 := t34
+t45 := #2
+t46 := #1
+t43 := t45 * t46
+t41 := t43 * p1
+t47 := #1
+t42 := t47 * p1
+t39 := t41 - t42
+t40 := #1
+t38 := t39 - t40
+p1 := t38
+GOTO label1
+LABEL label3 :
+RETURN ret1
+FUNCTION getNumDigits :
+PARAM number3
+t52 := #0
+ret3 := t52
+t54 := #0
+IF number3 < t54 GOTO label4
+GOTO label5
+LABEL label4 :
+t56 := #1
+t55 := #0 - t56
+RETURN t55
+LABEL label5 :
+LABEL label6 :
+t58 := #0
+IF number3 > t58 GOTO label7
+GOTO label8
+LABEL label7 :
+t62 := #10
+t60 := number3 / t62
+number3 := t60
+t66 := #2
+t64 := ret3 + t66
+ret3 := t64
+t70 := #2
+t68 := ret3 + t70
+ret3 := t68
+t74 := #3
+t72 := ret3 - t74
+ret3 := t72
+GOTO label6
+LABEL label8 :
+RETURN ret3
+FUNCTION isNarcissistic :
+PARAM number4
+t82 := #1
+t80 := t82 + number4
+t81 := #1
+t79 := t80 - t81
+ARG t79
+t78 := CALL getNumDigits
+numDigits4 := t78
+t86 := #0
+sum4 := t86
+n4 := number4
+LABEL label9 :
+t93 := #0
+IF n4 > t93 GOTO label10
+GOTO label11
+LABEL label10 :
+t97 := #10
+ARG t97
+ARG n4
+t95 := CALL mod
+s4 := t95
+t100 := n4 - s4
+t101 := #10
+t99 := t100 / t101
+n4 := t99
+ARG numDigits4
+ARG s4
+t107 := CALL power
+t105 := sum4 + t107
+sum4 := t105
+GOTO label9
+LABEL label11 :
+IF sum4 == number4 GOTO label12
+GOTO label13
+LABEL label12 :
+t112 := #1
+RETURN t112
+GOTO label14
+LABEL label13 :
+t113 := #0
+RETURN t113
+LABEL label14 :
+FUNCTION main :
+t116 := #0
+count := t116
+t119 := #300
+i := t119
+LABEL label15 :
+t121 := #500
+IF i < t121 GOTO label16
+GOTO label17
+LABEL label16 :
+ARG i
+t122 := CALL isNarcissistic
+t123 := #1
+IF t122 == t123 GOTO label18
+GOTO label19
+LABEL label18 :
+WRITE i
+t129 := #1
+t127 := count + t129
+count := t127
+LABEL label19 :
+t133 := #1
+t131 := i + t133
+i := t131
+GOTO label15
+LABEL label17 :
+WRITE count
+RETURN count

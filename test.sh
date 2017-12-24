@@ -3,7 +3,7 @@
 parser=parser
 
 for file in $@; do
-	result=${file%.cmm}.out
+	result=${file%.cmm}.ir
 	echo testing $file
-	./$parser $file > $result
+	./$parser $file $result
 done

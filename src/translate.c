@@ -1,6 +1,8 @@
 #include "../head/translate.h"
 #include <assert.h>
 
+
+
 void translate_exp(TREE_NODE* node, Operand* place){
     TREE_NODE* head = node->first_child;
     if(head->node_type == EXP_T){
@@ -98,8 +100,14 @@ void translate_exp(TREE_NODE* node, Operand* place){
             //printf("%d\n", tmp);
             Operand *op3 = make_const_int_operand(IN_ASSIGN, tmp * 4);
             Operand *op4 = make_temp_operand(NORMAL, t3);
-
             translate_exp(head, op1);
+            if(head->first_child->node_type == ID_T && head->first_child->brother == NULL) {
+                int temp = find_temp_from_name(head->first_child->s_value);
+               if(temp != -1) {
+                   op1 = make_temp_operand(NORMAL, temp);
+               }
+            }
+            
             translate_exp(head->brother->brother, op2);
             InterCode *code1 = make_binary_intercode(MUL, op4, op2, op3);
             add_to_intercode_table(code1);
@@ -184,7 +192,14 @@ void translate_exp(TREE_NODE* node, Operand* place){
                         add_to_intercode_table(code);
                     }
                     list_destroy(args_list);
-                    InterCode* code = make_unary_intercode(CALL,place,make_operand(OP_LABEL,NORMAL,name));
+                    InterCode* code;
+                    if(place == NULL){
+                        int t = new_temp();
+                        Operand* op = make_temp_operand(NORMAL, t);
+                        code = make_unary_intercode(CALL, op, make_operand(OP_LABEL, NORMAL, name));
+                    }else{
+                        code = make_unary_intercode(CALL,place,make_operand(OP_LABEL,NORMAL,name));
+                    }
                     add_to_intercode_table(code);
                 }
             }
@@ -195,11 +210,17 @@ void translate_exp(TREE_NODE* node, Operand* place){
 
 void translate_args(TREE_NODE* node, list_t* args_list){
     TREE_NODE* head = node->first_child;
-    int t = new_temp();
-    Operand* op = make_temp_operand(NORMAL, t);
-    translate_exp(head, op);
-    list_node_t* temp_node = list_node_new(op);
-    list_lpush(args_list, temp_node);
+    if(head->type->kind == ARRAY){
+        Operand* op = make_operand(OP_VAR, REF, head->first_child->s_value);
+        list_node_t* temp_node = list_node_new(op);
+        list_lpush(args_list, temp_node);
+    }else{
+        int t = new_temp();
+        Operand* op = make_temp_operand(NORMAL, t);
+        translate_exp(head, op);
+        list_node_t* temp_node = list_node_new(op);
+        list_lpush(args_list, temp_node);
+    }
     if(head->brother != NULL) {
         translate_args(head->brother->brother, args_list);
     }
@@ -335,25 +356,11 @@ void translate_dec(TREE_NODE *node, Operand *place) {
         //     add_to_intercode_table(code2);
         // }
     }
-    // if(head->brother != NULL) {
-    //     int t = new_temp();
-    //     Operand *op1;
-    //     Operand *op2 = make_temp_operand(NORMAL, t);
-    //     // variable
-    //     if(head->first_child->node_type == ID_T) {
-    //         op1 = make_operand(OP_VAR, NORMAL, head->first_child->s_value);
-    //         translate_exp(head->brother->brother, op2);
-    //         InterCode *code1 = make_unary_intercode(ASSIGN, op1, op2);
-    //         add_to_intercode_table(code1);
-    //         InterCode *code2 = make_unary_intercode(ASSIGN, place, op1);
-    //         add_to_intercode_table(code2);
-    //     }
-    //     // array
-    //     else {
-
-    //     }
-    // }
-    
+    else {
+        int t1 = new_temp();
+        Operand *op1 = make_temp_operand(NORMAL, t1);
+        translate_vardec(head, op1);
+    }
 }
 
 void translate_vardec(TREE_NODE *node, Operand *place) {
@@ -376,19 +383,28 @@ void translate_vardec(TREE_NODE *node, Operand *place) {
     }
     // array
     else {
-        int t1 = new_temp();
-        int t2 = new_temp();
-        Operand *op1 = make_temp_operand(NORMAL, t1);
-        Operand *op2 = make_const_int_operand(IN_ASSIGN, head->brother->brother->i_value);
-        Operand *op3 = make_const_int_operand(IN_ASSIGN, 4);
-        Operand *op4 = make_temp_operand(NORMAL, t2);
-
-        translate_vardec(head, op1);
-        InterCode *code1 = make_binary_intercode(MUL, op4, op2, op3);
+        char *name;
+        TREE_NODE *tmp = head;
+        while(tmp->node_type != ID_T) {
+            tmp = tmp->first_child;
+        }
+        Type *type = find(tmp->s_value);
+        int size = get_size(type);
+        Operand *op1 = make_operand(OP_VAR, NORMAL, tmp->s_value);        
+        Operand *op2 = make_const_int_operand(OUT_ASSIGN, size);
+        InterCode *code1 = make_unary_intercode(DEC, op1, op2);
         add_to_intercode_table(code1);
-        InterCode *code2 = make_binary_intercode(ADD, place, op1, op4);
+        int t = new_temp();
+        Operand* left = make_temp_operand(NORMAL, t);
+        Operand* right = make_operand(OP_VAR, REF, tmp->s_value);
+        InterCode* code2 = make_unary_intercode(ASSIGN, left, right);
         add_to_intercode_table(code2);
-        place->var_type = DEREF;
+        MAP_ITEM* map_item = (MAP_ITEM*)malloc(sizeof(MAP_ITEM));
+        map_item->temp = t;
+        map_item->name = (char*)malloc((strlen(tmp->s_value)+1)*sizeof(char));
+        strcpy(map_item->name, tmp->s_value);
+        list_node_t* node = list_node_new(map_item);
+        list_lpush(array_map, node);
     }
 }
 

@@ -4,9 +4,11 @@
 #include <stdio.h>
 
 list_t* inter_code_table;
+list_t* array_map;
 
 void init_inter_code_table(){
     inter_code_table = list_new();
+    array_map = list_new();
 }
 
 Operand* copy_operand(Operand* op){
@@ -282,4 +284,26 @@ int get_factor(Type *type) {
         tmp = tmp->array.elem;
     }
     return f;
+}
+
+int get_size(Type *type) {
+    Type *tmp = type;
+    int f = 4;
+    while(tmp->kind == ARRAY) {
+        f = f * tmp->array.size;
+        tmp = tmp->array.elem;
+    }
+    return f;
+}
+
+int find_temp_from_name(char* name){
+    list_iterator_t* it = list_iterator_new(array_map, LIST_HEAD);
+    list_node_t* node;
+    while((node=list_iterator_next(it))){
+        MAP_ITEM* item = node->val;
+        if(strcmp(item->name, name)==0){
+            return item->temp;
+        }
+    }
+    return -1;
 }

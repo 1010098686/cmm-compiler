@@ -32,8 +32,16 @@ struct _InterCode{
 };
 typedef struct _InterCode InterCode;
 
+struct _MAP_ITEM{
+    char* name;
+    int temp;
+};
+typedef struct _MAP_ITEM MAP_ITEM;
+
 extern list_t* inter_code_table;
+extern list_t* array_map;
 void init_inter_code_table();
+int find_temp_from_name(char* name);
 
 Operand* copy_operand(Operand* op);
 InterCode* copy_intercode(InterCode* intercode);
@@ -60,4 +68,7 @@ char* new_label();
 void test_inter_code();
 
 int get_factor(Type *type);
+
+int get_size(Type *type);
+
 #endif
