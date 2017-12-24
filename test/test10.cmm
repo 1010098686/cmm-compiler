@@ -1,0 +1,16 @@
+struct Type{
+    int name;
+    int operator;
+};
+struct {
+    struct Type a;
+    int b;
+}v;
+int test_function()
+{
+    int tmp = 2;
+    v.a.name = tmp + v.b;
+    v.a.operator = tmp;
+    v.b.name = v.b * v.b;
+    return v.b;
+}

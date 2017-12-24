@@ -1,0 +1,9 @@
+int func(float i, int j)
+{
+	return j;
+}
+
+int main()
+{
+	func(1.0, 2.0);
+}

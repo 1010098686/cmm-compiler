@@ -1,0 +1,29 @@
+FUNCTION func :
+PARAM a
+PARAM n
+t3 := #0
+s := t3
+t6 := #0
+i := t6
+LABEL label1 :
+IF i < n GOTO label2
+GOTO label3
+LABEL label2 :
+t15 := i * #4
+t12 := a + t15
+t10 := s + *t12
+s := t10
+t19 := #1
+t17 := i + t19
+i := t17
+GOTO label1
+LABEL label3 :
+RETURN s
+FUNCTION main :
+t26 := #5
+ARG t26
+ARG b
+t24 := CALL func
+r := t24
+t27 := #0
+RETURN t27
